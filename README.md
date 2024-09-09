@@ -105,7 +105,7 @@ and push to PWS repository for the deployment.
 
 Create a diagram that contains the request client to a Django-based web application and the response it gives, and explain the relationship between urls.py, views.py, models.py, and the html file.
 
-![Alt text](Downloads/pbp_diagram.png)
+![Alt text](cherry-store/pbp_diagram.png)
 
 The use of git in software development
 ```
