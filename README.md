@@ -103,17 +103,17 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "rayienda-hasmaradana-cherrystore.pbp
 ```
 and push to PWS repository for the deployment.
 
-Create a diagram that contains the request client to a Django-based web application and the response it gives, and explain the relationship between urls.py, views.py, models.py, and the html file.
+2. Create a diagram that contains the request client to a Django-based web application and the response it gives, and explain the relationship between urls.py, views.py, models.py, and the html file.
 
 ![Alt text](cherry-store/pbp_diagram.png)
 
-The use of git in software development
-```
+3. The use of git in software development
+
 Git works as the Version Control System that allows developers to track every changes in their code, and allows them to store their projects in remote repositores such as Github or Gitlab, developers can also collaborate with other developers as a team in the same project.
-```
-Why is Django used as the starting point for learning software development?
+
+4. Why is Django used as the starting point for learning software development?
 
 Because django supports rapid development and follows practices like the MVT architecture. It allows beginner developers to understand fundamental concepts like routin, templating, and database management without having to worrying about more codes. Django also has large and well-organized documentation, making it easier for beginners to find information and learn how to use the framework effectively. 
 
-Why is the Django model called an ORM?
+5. Why is the Django model called an ORM?
 Because they map python objects to relational database, providing an abstraction layer that simplifies database interaction. ORM abstracts interactions with the database, making it easier to manage data and keeping code consistent and easy to understand.
