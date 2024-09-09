@@ -6,14 +6,14 @@ Questions and Answers
 
 Project Implementation
 Creating a new Django project
-- made a new directory 'cherry-shop' for this project
-- activated virtual environment on the directory 'cherry-shop' to avoid Python version conflicts with the command:
+- made a new directory `cherry-shop` for this project
+- activated virtual environment on the directory `cherry-shop` to avoid Python version conflicts with the command:
 
 ```
 env\Scripts\activate
 ```
 
-- made a new file 'requirements.txt' and filled it with the following:
+- made a new file `requirements.txt` and filled it with the following:
 ```
 django
 gunicorn
@@ -32,20 +32,20 @@ pip install -r requirements.txt
 django-admin startproject cherry_shop .
 ```
 
-after the project is installed, I added '"localhost"' and '"127.0.0.1"' as a part of 'ALLOWED_HOST' in the file 'settings.py'
+after the project is installed, I added `"localhost"` and `"127.0.0.1"` as a part of `ALLOWED_HOST` in the file `settings.py`
 
 
-- Creating an application 'main' in the project
-Made a new app 'main' with command:
+- Creating an application `main` in the project
+Made a new app `main` with command:
 ```
 python manage.py startapp main
 ```
 - Make the Template
-After the app main is installed, I added 'main' to the 'INSTALLED_APPS' in the file 'settings.py'
+After the app main is installed, I added `main` to the `INSTALLED_APPS` in the file `settings.py`
 
-- Made a new directory 'template' inside directory'main' and created a new file 'main.html' as a template, and filled 'main.html' with placeholder fields {{ application_name }}, {{ name }}, and {{ class }} where the context will be provided by 'views.py'.
+- Made a new directory `template` inside directory `main` and created a new file `main.html` as a template, and filled `main.html` with placeholder fields `{{ application_name }}`, `{{ name }}`, and `{{ class }}` where the context will be provided by 'views.py'.
 
-- Made the model Product in models.py with the attributes name, price, and description.
+- Made the model Product in `models.py` with the attributes name, price, and description.
 
 ```
 from django.db import models
@@ -56,7 +56,7 @@ class Product(models.Model):
     description = models.TextField()
 ```
 
-- After the main HTML is done, I created a function 'show_main' in 'views.py' that will give back response as an HTML template that shows the name of the application, my name, and class.
+- After the main HTML is done, I created a function `show_main` in `views.py` that will give back response as an HTML template that shows the name of the application, my name, and class.
 
 from django.shortcuts import render
 ```
@@ -70,7 +70,7 @@ def show_main(request):
     return render(request, "main.html", context)
 ```
 URL Configuration
-- Made the file 'urls.py' on the directory 'main' for routing the 'show_main' function in 'views.py' to 'urls.py' and filled it with:
+- Made the file `urls.py` on the directory `main` for routing the `show_main` function in `views.py` to `urls.py` and filled it with:
 ```
 from django.urls import path
 from main.views import show_main
@@ -82,7 +82,7 @@ urlpatterns = [
 ]
 ```
 
-- Then configured 'urls.py' on the directory 'cherry_shop' and filled with:
+- Then configured `urls.py` on the directory `cherry_shop` and filled with:
 ```
 from django.contrib import admin
 from django.urls import path, include
@@ -96,8 +96,8 @@ urlpatterns = [
 ```
 Git & PWS Deployment
 - Made a new repository in github and connect it with my local repository
-- After connected, I did the command 'add', 'commit' and 'push' to push the changes to the remote repository
-- For deploying to PWS, I created a new PWS project named cherry-shop, then added this to the list 'ALLOWED_HOST':
+- After connected, I did the command `add`, `commit` and `push` to push the changes to the remote repository
+- For deploying to PWS, I created a new PWS project named `cherrystore`, then added this to the list 'ALLOWED_HOST':
 ```
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "rayienda-hasmaradana-cherrystore.pbp.cs.ui.ac.id"]
 ```
