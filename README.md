@@ -102,7 +102,7 @@ urlpatterns = [
 Git & PWS Deployment
 - Made a new repository in github and connect it with my local repository.
 - After connected, I did the command `add`, `commit` and `push` to push the changes to the remote repository.
-- For deploying to PWS, I created a new PWS project named `cherrystore`, then added this to the list 'ALLOWED_HOST':
+- For deploying to PWS, I created a new PWS project named `cherrystore`, then added this to the list `ALLOWED_HOST`:
 ```
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "rayienda-hasmaradana-cherrystore.pbp.cs.ui.ac.id"]
 ```
