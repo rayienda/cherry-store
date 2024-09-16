@@ -123,3 +123,211 @@ Because django supports rapid development and follows practices like the MVT arc
 5. Why is the Django model called an ORM?
 
 Because they map python objects to relational database, providing an abstraction layer that simplifies database interaction. ORM abstracts interactions with the database, making it easier to manage data and keeping code consistent and easy to understand.
+
+
+## Assignment 3 - PBD
+---
+ ### Explain why we need data delivery in implementing a platform.
+ Data delivery is important because it supports accurate and timely information flow accross many components of the platform. This improves the platform's functionality and user experience while enabling real-time interaction and decision-making. The platform won't be able to function optimally without it, because the data needed to perform various operations cannot be exchanged properly.
+
+ ### In your opinion, which is better, XML or JSON? Why is JSON more popular than XML?
+ In my opinion, JSON is better, also it is more popular than XML because of its efficiency compared to XML. JSON also has simpler syntax, and JSON is integrated with JavaScript, making it to easier to implement on web applications.
+
+ ### Explain the functional usage of is_valid() method in Django forms. Also explain why we need the method in forms.
+ `is_valid()` in Django is used to validate data thats included in the form. This method checks if the data submitted by user is according to the validation in the form. If it is valid it will give the result `True` and process the data, if not it will give back `False` and user will get an error message. Without the method `is_valid()`, we won't be able to make sure the data received is safe and according to the rules that's created. It is important for maintaining data integrity and application security.
+
+ ### Why do we need csrf_token when creating a form in Django? What could happen if we did not use csrf_token on a Django form? How could this be leveraged by an attacker?
+ `csrf_token` is used to protect web applications from CSRF (Cross-Site Request Forgery) attacks. CSRF attacks occur when an attacker sends a malicious request to the server on behalf of an authenticated user. If we don't add `csrf_token` to the Django form, an attacker could create a script/link that automatically sends a request to our server by exploiting the credentials of the active user. Without this token, the server cannot verify whether the request received comes from a legitimate source, allowing the attacker to perform unwanted actions on behalf of that user, such as changing data or making unauthorized transactions.
+
+ ### Explain how you implemented the checklist above step-by-step (not just following the tutorial).
+ 
+
+- Create a form that can receive new datas
+
+```python
+# forms.py
+from django.forms import ModelForm
+from main.models import Product
+
+class ShopEntryForm(ModelForm):
+    class Meta:
+        model = Product
+        fields = ["name", "price", "description", "color"]
+```
+
+Add an UUID to the model to correctly identify each `Product` model
+
+```python
+# models.py
+class Product(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+```
+
+- Add a URL path for Form
+
+```python
+# urls.py
+from django.urls import path
+
+urlpatterns = [
+    path('create-product-entry', create_product_entry, name='create_product_entry'),
+]
+```
+
+- Create an HTML template to show form:
+```html
+<!-- create_product_entry.html -->
+{% extends 'base.html' %} 
+{% block content %}
+<h1>Add New Product</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  <table>
+    {{ form.as_table }}
+    <tr>
+      <td></td>
+      <td>
+        <input type="submit" value="Add Product" />
+      </td>
+    </tr>
+  </table>
+</form>
+
+{% endblock %}
+```
+```html
+<!-- main.html -->
+{% if not product_entries %}
+<p>There are no products in cherry store.</p>
+{% else %}
+<table>
+  <tr>
+    <th>Product Name</th>
+    <th>Price</th>
+    <th>Description</th>
+    <th>Color</th>
+  </tr>
+
+  {% comment %} This is how to display product
+  {% endcomment %} 
+  {% for product_entry in product_entries %}
+  <tr>
+    <td>{{product_entry.name}}</td>
+    <td>{{product_entry.price}}</td>
+    <td>{{product_entry.description}}</td>
+    <td>{{product_entry.color}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<br />
+
+<a href="{% url 'main:create_product_entry' %}">
+  <button>Add New Product</button>
+</a>
+{% endblock content %}
+```
+```python
+# views.py
+def show_main(request):
+    shop_entry = Product.objects.all()
+    context = {
+        'application_name': 'cherry-shop',
+        'class': 'PBD KKI',
+        'name': 'Rayienda Hasmaradana',
+        'product_entries' : shop_entry
+    }
+
+    return render(request, "main.html", context)
+```
+
+Then create a View to show and process input form
+
+```python
+# views.py
+def create_product_entry(request):
+    form = ShopEntryForm(request.POST or None)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+        return redirect('main:show_main')
+
+    context = {'form': form}
+    return render(request, "create_product_entry.html", context)
+```
+
+- Adding 4 Views Function to View Object in XML and JSON Format
+
+View for XML:
+
+```python
+from django.http import HttpResponse
+from django.core import serializers
+
+def show_xml(request):
+    data = Product.objects.all()
+    return HttpResponse(serializers.serialize("xml", data), content_type="application/xml")
+```
+
+View for JSON:
+
+```python
+from django.http import HttpResponse
+from django.core import serializers
+
+def show_json(request):
+    data = Product.objects.all()
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+```
+
+View for XML by ID:
+
+```python
+def show_xml_by_id(request, id):
+    data = Product.objects.filter(pk=id)
+    return HttpResponse(serializers.serialize("xml", data), content_type="application/xml")
+```
+
+View for JSON by ID:
+
+```python
+def show_json_by_id(request, id):
+    data = Product.objects.filter(pk=id)
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+```
+
+- Make a routing for each views:
+Add a URL Routing for each views in the format JSON and XML to `urls.py`:
+
+```python
+from django.urls import path
+from main.views import show_main, create_product_entry, show_xml, show_json, show_xml_by_id, show_json_by_id
+app_name = 'main'
+
+urlpatterns = [
+
+#URL for XML and JSON
+    path('xml/', show_xml, name='show_xml'),
+    path('json/', show_json, name='show_json'),
+
+#URL for XML and JSON by ID
+    path('xml/<str:id>/', show_xml_by_id, name='show_xml_by_id'),
+    path('json/<str:id>/', show_json_by_id, name='show_json_by_id'),
+
+]
+```
+
+Accessing the four URLs by using Postman:
+**JSON**
+![alt text](postman_json.png)
+
+**XML**
+![alt text](postman_xml.png)
+
+**JSON by ID**
+![alt text](postman_json_by_id.png)
+
+**XML by ID**
+![alt text](postman_xml_by_id.png)
