@@ -321,13 +321,13 @@ urlpatterns = [
 
 Accessing the four URLs by using Postman:
 **JSON**
-![alt text](postman_json.png)
+ ![alt text](images/postman_json.png)
 
 **XML**
-![alt text](postman_xml.png)
+![alt text](images/postman_xml.png)
 
 **JSON by ID**
-![alt text](postman_json_by_id.png)
+![alt text](images/postman_json_by_id.png)
 
 **XML by ID**
-![alt text](postman_xml_by_id.png)
+![alt text](images/postman_xml_by_id.png)
