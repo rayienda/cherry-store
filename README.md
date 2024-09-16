@@ -320,6 +320,7 @@ urlpatterns = [
 ```
 
 Accessing the four URLs by using Postman:
+
 **JSON**
  ![alt text](images/postman_json.png)
 
