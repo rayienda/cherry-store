@@ -128,16 +128,16 @@ Because they map python objects to relational database, providing an abstraction
 ## Assignment 3 - PBD
 ---
  ### Explain why we need data delivery in implementing a platform.
- Data delivery is important because it supports accurate and timely information flow accross many components of the platform. This improves the platform's functionality and user experience while enabling real-time interaction and decision-making. The platform won't be able to function optimally without it, because the data needed to perform various operations cannot be exchanged properly.
+ Data delivery is important because it supports accurate and timely information flow accross many components of the platform. This improves the platform's functionality and user experience while enabling real-time interaction and decision-making. Without it, the data needed to perform various operations can't be exchanged properly and the platform won't be able to function optimally.
 
  ### In your opinion, which is better, XML or JSON? Why is JSON more popular than XML?
  In my opinion, JSON is better, also it is more popular than XML because of its efficiency compared to XML. JSON also has simpler syntax, and JSON is integrated with JavaScript, making it to easier to implement on web applications.
 
  ### Explain the functional usage of is_valid() method in Django forms. Also explain why we need the method in forms.
- `is_valid()` in Django is used to validate data thats included in the form. This method checks if the data submitted by user is according to the validation in the form. If it is valid it will give the result `True` and process the data, if not it will give back `False` and user will get an error message. Without the method `is_valid()`, we won't be able to make sure the data received is safe and according to the rules that's created. It is important for maintaining data integrity and application security.
+ `is_valid()` in Django is used to validate data thats included in the form. This method checks if the data submitted by user is in the correct format. If it is valid it will give the result `True` and the data will be processed, if not it will give back `False` and user will get an error message. This method prevents users from submitting invalid data that might lead to errors and may result in security risks.
 
  ### Why do we need csrf_token when creating a form in Django? What could happen if we did not use csrf_token on a Django form? How could this be leveraged by an attacker?
- `csrf_token` is used to protect web applications from CSRF (Cross-Site Request Forgery) attacks. CSRF attacks occur when an attacker sends a malicious request to the server on behalf of an authenticated user. If we don't add `csrf_token` to the Django form, an attacker could create a script/link that automatically sends a request to our server by exploiting the credentials of the active user. Without this token, the server cannot verify whether the request received comes from a legitimate source, allowing the attacker to perform unwanted actions on behalf of that user, such as changing data or making unauthorized transactions.
+ `csrf_token` is used to protect web applications from CSRF (Cross-Site Request Forgery) attacks. CSRF tokens ensure that form submissions are made by the authenticated user and not a malicious scripts from the attacker. If we don't add `csrf_token` to the Django form, an attacker could create a malicious request in the form of script/link that automatically sends a request to our server by taking the credentials of the active user. Without this token, the server cannot verify whether the request received comes from a legitimate source, allowing the attacker to perform unwanted actions on behalf of that user, such as changing data or making unauthorized transactions.
 
  ### Explain how you implemented the checklist above step-by-step (not just following the tutorial).
  
