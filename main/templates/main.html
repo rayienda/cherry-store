@@ -3,7 +3,7 @@
 <h1>Cherry Store</h1>
 
 <h5>Name: </h5>
-<p>{{ name }}</p>
+<p>{{ my_name }}</p>
 
 <h5>Class: </h5>
 <p>{{ class }}</p>
@@ -40,4 +40,11 @@
 <a href="{% url 'main:create_product_entry' %}">
   <button>Add New Product</button>
 </a>
+
+<a href="{% url 'main:logout' %}"></a>
+  <button>Logout</button>
+</a>
+
+<h5>Last login session: {{ last_login }}</h5>
+
 {% endblock content %}
