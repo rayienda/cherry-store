@@ -20,7 +20,6 @@ def show_main(request):
         'name': request.user.username,
         'application_name': 'cherry-shop',
         'class': 'PBD KKI',
-        'my_name': 'Rayienda Hasmaradana',
         'product_entries' : shop_entry,
         'last_login': request.COOKIES['last_login'],
 

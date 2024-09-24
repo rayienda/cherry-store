@@ -499,6 +499,21 @@ python manage.py migrate
 ```
 ##### Show logged in username
 
+get logged in user's data  in view 
+```
+# views.py
+def show_main(request):
+    shop_entry = Product.objects.filter(user=request.user)
+    context = {
+        'name': request.user.username,
+    }
+```
+
+display user's information in `main.html`
+```
+<p>{{ name }}</p>
+```
+
 ##### Apply Cookies for Last Login
 
 Modify views.py to get last_login
