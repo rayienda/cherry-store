@@ -2,6 +2,8 @@
 
 http://rayienda-hasmaradana-cherrystore.pbp.cs.ui.ac.id/
 
+<Summary><b>Assignment 2</b></Summary>
+
 Questions and Answers
 1. Explain how you implemented the checklist above step-by-step (not just following the tutorial)
 
@@ -124,6 +126,7 @@ Because django supports rapid development and follows practices like the MVT arc
 
 Because they map python objects to relational database, providing an abstraction layer that simplifies database interaction. ORM abstracts interactions with the database, making it easier to manage data and keeping code consistent and easy to understand.
 
+<Summary><b>Assignment 3</b></Summary>
 
 ## Assignment 3 - PBD
 ---
@@ -333,6 +336,7 @@ urlpatterns = [
 **XML by ID**
 ![alt text](images/postman_xml_by_id.png)
 
+<Summary><b>Assignment 4</b></Summary>
 
 ## Assignment 4 - PBD
 
@@ -435,12 +439,53 @@ def register(request):
     return render(request, 'register.html', context)
 ```
 
+import to `urls.py` and add to `urlspatterns`
+
+```
+# urls.py
+from main.views import register
+
+urlpatterns = [
+    path('register/', register, name='register'),
+]
+```
+
 - make the template `register.html` to display the registration form
 
+```
+{% extends 'base.html' %} {% block meta %}
+<title>Register</title>
+{% endblock meta %} {% block content %}
 
+<div class="login">
+  <h1>Register</h1>
+
+  <form method="POST">
+    {% csrf_token %}
+    <table>
+      {{ form.as_table }}
+      <tr>
+        <td></td>
+        <td><input type="submit" name="submit" value="Register" /></td>
+      </tr>
+    </table>
+  </form>
+
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
+{% endblock content %}
+```
 ##### Login 
 - Use function `login_user` to handle the login process
 - add the login URL in `urls.py`
+
 ```
 # urls.py
 from main.views import login_user
@@ -497,7 +542,24 @@ class Product(models.Model):
 python manage.py makemigrations
 python manage.py migrate
 ```
-##### Show logged in username
+
+modify the function `create_product_entry` in `views.py` to modify the `user` field before saving it to the database to link product to the user that created it
+
+```
+def create_product_entry(request):
+    form = ShopEntryForm(request.POST or None)
+
+    if form.is_valid() and request.method == "POST":
+        product_entry = form.save(commit=False)
+        product_entry.user = request.user
+        product_entry.save()
+        return redirect('main:show_main')
+
+    context = {'form': form}
+    return render(request, "create_product_entry.html", context)
+```
+
+##### Show logged in user's username
 
 get logged in user's data  in view 
 ```
