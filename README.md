@@ -332,3 +332,185 @@ urlpatterns = [
 
 **XML by ID**
 ![alt text](images/postman_xml_by_id.png)
+
+
+## Assignment 4 - PBD
+
+### What is the difference between HttpResponseRedirect() and redirect()?
+- HttpResponseRedirect() is a class that gives back response HTTP 302 (which means "Found", i.e., redirection) to redirect the user to another URL. It is lower-level and requires an explicit URL.
+example:
+
+```
+from django.http import HttpResponseRedirect
+
+def my_view(request):
+    return HttpResponseRedirect('/some/url/')
+```
+- redirect()
+redirect() is a shortcut function provided by Django that makes it easier to perform redirects. It is more convenient and flexible, automatically resolving URLs. Preferred in most cases for its simplicity and ease of use. 
+example: 
+
+```
+from django.shortcuts import redirect
+
+def my_view(request):
+    return redirect('/some/url/')
+```
+
+### Explain how the Product model is linked with User!
+In Django, the ForeignKey relationship is usually used to link the `Product` model with the `User` model. This allows each product to be associated with a specific user.
+
+example:
+```
+from django.db import models
+from django.contrib.auth.models import User
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    price = models.IntegerField
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to User model
+
+    def __str__(self):
+        return self.name
+```
+Every time a user made a new product entry, the following entry is linked with the logged in user. The ForeignKey relationship allows a user can have many entries.
+
+### What is the difference between authentication and authorization, and what happens when a user logs in? Explain how Django implements these two concepts.
+
+Authentication is the process of verifying a user's identity, usually through a username and password combination. Authorization determines what a user is allowed to do and which resources they can access once they are authenticated. 
+
+#### What Happens When a User Logs In?
+- the user submits credentials info (username and password)
+- authentication: the system verifies the provided credentials against stored data
+- authorization: the system checks the users permission to determine the actions they can perform and what resources they can access
+
+#### How Django Implements Authentication and Authorization
+- authentication:
+1. User Model: Django includes a built-in User model that stores user information.
+2. Authentication Views: Django provides views for login, logout, and password management.
+3. Authentication Backends: Django uses authentication backends to handle the authentication process. The default backend checks the username and password against the User model.
+4. Login: The authenticate function verifies the credentials, and the login function creates a session for the user.
+
+- authorization
+1. Permissions: Django's User model includes fields for permissions. Permissions can be assigned to users or groups.
+2. Groups: Groups are a way to apply permissions to multiple users. Users in a group inherit the group's permissions.
+3. Decorators and Mixins: Django provides decorators like @login_required and mixins like PermissionRequiredMixin to restrict access to views based on user authentication and permissions.
+
+### How does Django remember logged-in users? Explain other uses of cookies and whether all cookies are safe to use.
+
+Django uses sessions to remember logged-in users. When a user logs in, Django creates a session and stores the session ID in a cookie on the user's browser. This session ID is then used to identify the user in subsequent requests.
+
+#### Other Uses of Cookies:
+Cookies can be used to track user behavior for analytics purposes, store user preferences and settings, and store information to personalize the user experience.
+
+#### Are All Cookies Safe to Use?
+Not all cookies are safe to use. Unsecure cookies may be vulnerable to Cross-Site Scripting (XSS) attacks. Security considerations include:
+
+- Secure Cookies : use the `Secure` flag to ensure cookies are only sent over HTTPS
+- HttpOnly Cookies: use the `HttpOnly` flag to prevent client-side scripts from accessing the cookie
+SameSite Cookies: Use the `SameSite` attribute to prevent cross-site request forgery (CSRF) attacks
+
+### Explain how did you implement the checklist step-by-step (apart from following the tutorial).
+
+1. Implement the Registration, Login, and Logout Functions
+
+##### Registration
+- Create a form for new user registration using `UserCreationForm`
+- Create a view that handles the registration form and saves the new user to the database
+- Redirect the user to the login page after successful registration
+
+```python
+# views.py
+def register(request):
+    form = UserCreationForm()
+
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your account has been successfully created!')
+            return redirect('main:login')
+    context = {'form':form}
+    return render(request, 'register.html', context)
+```
+
+- make the template `register.html` to display the registration form
+
+
+##### Login 
+- Use function `login_user` to handle the login process
+- add the login URL in `urls.py`
+```
+# urls.py
+from main.views import login_user
+
+urlpatterns = [
+    path('login/', login_user, name='login'),
+]
+```
+
+##### Logout
+- Use function `logout_user` to handle the login process
+- add the login URL in `urls.py`
+```
+# urls.py
+from main.views import logout_user
+
+urlpatterns = [
+    path('logout/', logout_user, name='logout'),
+]
+```
+add logout button in template
+
+```
+<a href="{% url 'main:logout' %}">
+  <button>Logout</button>
+</a>
+```
+##### Restricting Access to the Main Page
+Make user requires to log in before accessing the web
+```
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='/login')
+def show_main(request):
+...
+```
+
+##### Connecting `Product` with `User`
+
+- Create a model `Product` and add ForeignKey to User
+
+```
+# models.py
+from django.db import models
+from django.contrib.auth.models import User
+
+class Product(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ...
+```
+
+- run the migration to apply changes
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+##### Show logged in username
+
+##### Apply Cookies for Last Login
+
+Modify views.py to get last_login
+```
+# views.py
+def show_main(request):
+    context = {
+        'last_login': request.COOKIES['last_login'],
+    }
+```
+Display the last login:
+main.html
+```
+<h5>Last login session: {{ last_login }}</h5>
+```
