@@ -126,7 +126,7 @@ Because django supports rapid development and follows practices like the MVT arc
 5. Why is the Django model called an ORM?
 
 Because they map python objects to relational database, providing an abstraction layer that simplifies database interaction. ORM abstracts interactions with the database, making it easier to manage data and keeping code consistent and easy to understand.
-<details>
+</details>
 
 <details>
 <Summary><b>Assignment 3</b></Summary>
@@ -338,7 +338,7 @@ urlpatterns = [
 
 **XML by ID**
 ![alt text](images/postman_xml_by_id.png)
-<details>
+</details>
 
 <details>
 <Summary><b>Assignment 4</b></Summary>
@@ -596,4 +596,4 @@ main.html
 ```
 <h5>Last login session: {{ last_login }}</h5>
 ```
-<details>
+</details>
