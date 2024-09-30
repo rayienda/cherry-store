@@ -1,10 +1,10 @@
 import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from main.forms import ShopEntryForm
 from main.models import Product
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core import serializers
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -19,14 +19,13 @@ def show_main(request):
     context = {
         'name': request.user.username,
         'application_name': 'cherry-shop',
+        'npm' : '2306172735',
         'class': 'PBD KKI',
         'product_entries' : shop_entry,
         'last_login': request.COOKIES['last_login'],
-
     }
 
     return render(request, "main.html", context)
-
 
 def create_product_entry(request):
     form = ShopEntryForm(request.POST or None)
@@ -90,3 +89,26 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+def edit_product(request, id):
+    # Get product entry based on id
+    edit_product = Product.objects.get(pk = id)
+
+    # Set product entry as an instance of the form
+    form = ShopEntryForm(request.POST or None, instance=edit_product)
+
+    if form.is_valid() and request.method == "POST":
+        # Save form and return to home page
+        form.save()
+        return HttpResponseRedirect(reverse('main:show_main'))
+
+    context = {'form': form}
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    # Get mood based on id
+    delete_product = Product.objects.get(pk = id)
+    # Delete mood
+    delete_product.delete()
+    # Return to home page
+    return HttpResponseRedirect(reverse('main:show_main'))

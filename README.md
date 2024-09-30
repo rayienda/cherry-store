@@ -597,3 +597,135 @@ main.html
 <h5>Last login session: {{ last_login }}</h5>
 ```
 </details>
+
+<details>
+<Summary><b>Assignment 5</b></Summary>
+
+## Assignment 5 - PBD
+
+### If there are multiple CSS selectors for an HTML element, explain the priority order of these CSS selectors!
+
+When multiple CSS selectors apply to the same HTML element, the browser determines which styles to apply based on a set of rules known as specificity. The priority order of CSS selectors is determined by their specificity and the order in which they appear. Here is a detailed explanation of the priority order:
+
+Specificity is calculated based on the types of selectors used in the CSS rule. It is represented as a four-part value: a, b, c, d.
+
+1. Inline Styles (a): Inline styles have the highest specificity. They are applied directly to an element using the style attribute.
+
+Example: <div style="color: red;"></div>
+Specificity: 1, 0, 0, 0
+
+2. ID Selectors (b): ID selectors have high specificity and are unique within a document.
+
+Example: #header { color: blue; }
+Specificity: 0, 1, 0, 0
+
+3. Class, Attribute, and Pseudo-class Selectors (c): These selectors have moderate specificity.
+
+Example: .container { color: green; }
+Example: [type="text"] { color: yellow; }
+Example: :hover { color: pink; }
+Specificity: 0, 0, 1, 0
+
+4. Element and Pseudo-element Selectors (d): These selectors have the lowest specificity.
+
+Example: div { color: black; }
+Example: ::before { content: ""; }
+Specificity: 0, 0, 0, 1
+
+Example:
+```
+
+<title>CSS Specificity</title>
+    <style>
+        div { color: black; } /* Specificity: 0, 0, 0, 1 */
+        .container { color: green; } /* Specificity: 0, 0, 1, 0 */
+        #header { color: blue; } /* Specificity: 0, 1, 0, 0 */
+        div#header.container { color: red; } /* Specificity: 0, 1, 1, 1 */
+    </style>
+```
+the element will have the text color red because the selector div#header.container hsa the highest specificity.\
+
+Summary
+Inline Styles: Highest priority (1000 points)
+ID Selectors: High priority (100 points)
+Class, Attribute, and Pseudo-class Selectors: Moderate priority (10 points)
+Element and Pseudo-element Selectors: Lowest priority (1 point)
+
+
+### Why does responsive design become an important concept in web application development? Give examples of applications that have and have not implemented responsive design!
+
+Responsive design is crucial in web application development for several reasons:
+
+User Experience: Responsive design ensures that users have a consistent and optimal experience across different devices, including desktops, tablets, and smartphones. This adaptability enhances user satisfaction and engagement.
+
+Increased Mobile Usage: With the rise in mobile device usage, it's essential for web applications to be accessible and functional on smaller screens. Responsive design addresses this need by adjusting the layout and content to fit various screen sizes.
+
+SEO Benefits: Search engines like Google prioritize mobile-friendly websites in their search results. Implementing responsive design can improve a website's search engine ranking, leading to increased visibility and traffic.
+
+Cost-Effectiveness: Developing a single responsive website is more cost-effective than creating separate versions for desktop and mobile. It reduces development and maintenance efforts.
+
+Future-Proofing: Responsive design prepares web applications for future devices and screen sizes, ensuring long-term usability and relevance.
+
+#### Examples of applications that have  implemented responsive design:
+
+- X: X's web application adjusts the layout and content to different screen sizes
+
+- Google Maps: Google Maps adapts its interface depending on screen size while keeping essential features accessible
+
+#### Examples of applications that have not implemented responsive design:
+
+SIAK NG: Smart interface only available on desktop mode.
+
+### Explain the differences between margin, border, and padding, and how to implement these three things!
+1. Margin: The space outside the border of an element. It creates space between the element and its neighboring elements.
+
+2. Border: The line around an element. It creates a frame around an element.
+
+3. Padding: The space inside the border of an element. It creates space around the content of an element.
+
+```
+.example {
+    margin: 20px;          /* Space outside the border */
+    border: 2px solid black; /* Border around the element */
+    padding: 10px;         /* Space inside the border, around the content */
+}
+```
+
+### Explain the concepts of flex box and grid layout along with their uses!
+
+Flexbox (Flexible Box Layout) is a CSS layout module designed to provide a more efficient way to lay out, align, and distribute space among items in a container, even when their size is unknown or dynamic. It is particularly useful for creating responsive layouts.
+
+Uses of Flexbox:
+- Allows elements to expand or shrink according to the available space
+- Dynamically arranges elements in a row or column
+- Ideal for creating horizontal or vertical navigation bars that need to be responsive and evenly spaced
+
+example:
+```
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; /*divides elements equally*/
+    align-items: center;
+}
+```
+
+Grid Layout is a CSS layout module that provides a two-dimensional grid-based layout system, optimized for responsive design. It allows you to create complex layouts with rows and columns.
+
+Uses of Grid Layout:
+- For creating complex, two-dimensional layouts (rows and columns)
+- Ideal for two-dimensional layouts, such as complex web page layouts, dashboards, photo galleries, and forms.
+
+example:
+```
+.container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Creates three equal columns */
+    grid-template-rows: auto;
+    grid-gap: 10px; /* Space between grid items */
+}
+```
+### Explain how you implemented the checklist above step-by-step (not just following the tutorial)!
+
+
+</details>
