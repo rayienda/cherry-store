@@ -727,5 +727,688 @@ example:
 ```
 ### Explain how you implemented the checklist above step-by-step (not just following the tutorial)!
 
+- Import tailwind in `base.html`
 
+```
+<head>
+{% block meta %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock meta %}
+<script src="https://cdn.tailwindcss.com">
+</script>
+</head>
+```
+
+and add the Tailwind CSS classes to each files in main/templates directory and added a navbar
+
+example: `main.html`
+
+```
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Cherry Store</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="overflow-x-hidden px-4 md:px-8 pb-8 pt-24 min-h-screen" style="background-image: url('/static/image/white-pink-bg.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+  <div class="p-2 mb-6 relative">
+    <div class="relative grid grid-cols-1 z-30 md:grid-cols-3 gap-8">
+      {% include "card_info.html" with title='NPM' value=npm %}
+      {% include "card_info.html" with title='Name' value=name %}
+      {% include "card_info.html" with title='Class' value=class %}
+    </div>
+    <div class="w-full px-6 absolute top-[44px] left-0 z-20 hidden md:flex">
+      <div class="w-full min-h-4 bg-[#800000]">
+      </div>
+    </div>
+    <div class="h-full w-full py-6 absolute top-0 left-0 z-20 md:hidden flex">
+      <div class="h-full min-w-4 bg-[#800000] mx-auto">
+      </div>
+    </div>
+  </div>
+
+  <div class="px-3 mb-4">
+    <div class="flex rounded-md items-center bg-[#800000] py-2 px-4 w-fit">
+      <h1 class="text-white text-center">Last Login: {{ last_login }}</h1>
+    </div>
+  </div>
+
+  <div class="flex justify-end mb-6">
+    <a href="{% url 'main:create_product_entry' %}" class="bg-[#800000] hover:bg-[#660000] text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105">
+      Add New Product Entry
+    </a>
+  </div>
+
+  {% if not product_entries %}
+  <div class="flex flex-col items-center justify-center min-h-[24rem] p-6">
+    <img src="{% static 'image/very-sad.png' %}" alt="Sad face" class="w-32 h-32 mb-4" />
+    <p class="text-center text-gray-600 mt-4">There is no product yet in Cherry Store.</p>
+  </div>
+  {% else %}
+  <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 w-full">
+    {% for product_entry in product_entries %}
+      {% include 'card_product.html' with product_entry=product_entry %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}
+```
+- Add edit and delete feature
+
+```
+#views.py
+#edit feature
+def edit_product(request, id):
+    edit_product = Product.objects.get(pk = id)
+
+    form = ShopEntryForm(request.POST or None, instance=edit_product)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+        return HttpResponseRedirect(reverse('main:show_main'))
+
+    context = {'form': form}
+    return render(request, "edit_product.html", context)
+
+#delete feature
+def delete_product(request, id):
+    delete_product = Product.objects.get(pk = id)
+    delete_product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
+
+```
+
+add imports to `views.py` file
+
+```
+from django.shortcuts import reverse
+from django.http import HttpResponseRedirect
+```
+
+create an HTML file named `edit_product.html` and fill it with this code:
+
+```
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+<title>Edit Product</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<div class="flex flex-col min-h-screen " style="background-image: url('/static/image/flower3.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+  <div class="container mx-auto px-4 py-8 mt-16 max-w-xl">
+    <h1 class="text-3xl font-bold text-center mb-8 text-black">Edit Product Entry</h1>
+  
+    <div class="bg-white rounded-lg p-6 form-style">
+      <form method="POST" class="space-y-6">
+          {% csrf_token %}
+          {% for field in form %}
+              <div class="flex flex-col">
+                  <label for="{{ field.id_for_label }}" class="mb-2 font-semibold text-gray-700">
+                      {{ field.label }}
+                  </label>
+                  <div class="w-full">
+                      {{ field }}
+                  </div>
+                  {% if field.help_text %}
+                      <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
+                  {% endif %}
+                  {% for error in field.errors %}
+                      <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                  {% endfor %}
+              </div>
+          {% endfor %}
+          <div class="flex justify-center mt-6">
+              <button type="submit" class="bg-[#800000] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#750000] transition duration-300 ease-in-out w-full">
+                  Edit Product
+              </button>
+          </div>
+      </form>
+  </div>
+  </div>
+</div>
+{% endblock %}
+```
+
+add URL path to `urls.py`
+
+```
+...
+from main.views import edit_product
+from main.views import delete_product
+app_name = 'main'
+
+urlpatterns = [
+path('edit-product/<uuid:id>', edit_product, name='edit_product'),
+path('delete/<uuid:id>', delete_product, name='delete_product'),
+...
+]
+```
+
+modify the `main.html` to add edit and delete button
+```
+...
+<tr>
+    ...
+    <td>
+        <a href="{% url 'main:edit_product' product_entry.pk %}">
+            <button>
+                Edit
+            </button>
+        </a>
+    </td>
+    <td>
+        <a href="{% url 'main:delete_product' product_entry.pk %}">
+            <button>
+                Delete
+            </button>
+        </a>
+    </td>
+</tr>
+...
+```
+
+- Adding navigation bar
+
+create new HTML file named `navbar.html` under the folder `templates` in the main directory and fill with this code:
+
+```
+<nav class="shadow-lg fixed top-0 left-0 z-40 w-screen" style="background-color: #800000;">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center">
+        <h1 class="text-2xl font-bold text-center text-white">Cherry Store</h1>
+      </div>
+      <!-- Desktop Navbar -->
+      <div class="hidden md:flex items-center">
+        <a href="#" class="text-gray-300 hover:text-white mx-4">Home</a>
+        <a href="#" class="text-gray-300 hover:text-white mx-4">Products</a>
+        <a href="#" class="text-gray-300 hover:text-white mx-4">Categories</a>
+        <a href="#" class="text-gray-300 hover:text-white mx-4">Cart</a>
+
+        {% if user.is_authenticated %}
+          <span class="text-gray-300 mx-4">Welcome, {{ user.username }}♥ </span>
+          <a href="{% url 'main:logout' %}" class="text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+            Logout
+          </a>
+        {% else %}
+          <a href="{% url 'main:login' %}" class="text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 mx-2">
+            Login
+          </a>
+          <a href="{% url 'main:register' %}" class="text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+            Register
+          </a>
+        {% endif %}
+      </div>
+      
+      <!-- Add Mobile Hamburger Menu Button -->
+      <div class="md:hidden flex items-center">
+        <button class="mobile-menu-button">
+          <svg class="w-6 h-6 text-white" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu hidden md:hidden px-4 w-full">
+    <div class="pt-2 pb-3 space-y-1 mx-auto">
+      <a href="#" class="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Home</a>
+      <a href="#" class="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Products</a>
+      <a href="#" class="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Categories</a>
+      <a href="#" class="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Cart</a>
+      {% if user.is_authenticated %}
+        <span class="block text-gray-300 px-3 py-2">Welcome, {{ user.username }}</span>
+        <a href="{% url 'main:logout' %}" class="block text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+          Logout
+        </a>
+      {% else %}
+        <a href="{% url 'main:login' %}" class="block text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 mb-2">
+          Login
+        </a>
+        <a href="{% url 'main:register' %}" class="block text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+          Register
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    const btn = document.querySelector("button.mobile-menu-button");
+    const menu = document.querySelector(".mobile-menu");
+
+    btn.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+  </script>
+</nav>
+```
+
+- Configure static files
+
+added these codes to `settings.py`
+```
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Add it directly under SecurityMiddleware
+    ...
+]
+
+...
+STATIC_URL = '/static/'
+if DEBUG:
+    STATICFILES_DIRS = [
+        BASE_DIR / 'static' 
+    ]
+else:
+    STATIC_ROOT = BASE_DIR / 'static'
+...
+```
+
+- Add CSS for styling
+
+Create a new file `global.css` under the folder `static` in the root directory
+```
+body {
+    background-color: #800000; /* Set background color to maroon */
+    color: #ffffff; /* Ensure text is white for contrast */
+}
+
+.form-style form input, form textarea, form select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid #bcbcbc;
+    border-radius: 0.375rem;
+    background-color: #ffffff;
+    color: #000000;
+}
+.form-style form input:focus, form textarea:focus, form select:focus {
+    outline: none;
+    border-color: #800000;
+    box-shadow: 0 0 0 3px #800000;
+}
+@keyframes shine {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.animate-shine {
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.3));
+    background-size: 200% 100%;
+}
+```
+
+Add these code to `base.html` to link `global.css` and Tailwind script to `base.html`
+
+```
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% block meta %} {% endblock meta %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}"/>
+  </head>
+  <body>
+    {% block content %} {% endblock content %}
+  </body>
+</html>
+```
+- Styling the login, register, home, edit, and add new product page
+
+`login.html`
+```
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Login</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center w-screen py-12 px-4 sm:px-6 lg:px-8"
+     style="background-image: url('/static/image/flower7.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">  
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-black text-3xl font-extrabold text-gray-900">
+        Login to your account
+      </h2>
+    </div>
+    <form class="mt-8 space-y-6" method="POST" action="">
+      {% csrf_token %}
+      <input type="hidden" name="remember" value="true">
+      <div class="rounded-md shadow-sm -space-y-px">
+        <div>
+          <label for="username" class="sr-only">Username</label>
+          <input id="username" name="username" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Username">
+        </div>
+        <div>
+          <label for="password" class="sr-only">Password</label>
+          <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Password">
+        </div>
+      </div>
+
+      <div>
+        <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#800000] hover:bg-[#750000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Sign in
+        </button>
+      </div>
+    </form>
+
+    {% if messages %}
+    <div class="mt-4">
+      {% for message in messages %}
+      {% if message.tags == "success" %}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% elif message.tags == "error" %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% else %}
+            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+      <p class="text-sm text-black">
+        Don't have an account yet?
+        <a href="{% url 'main:register' %}" class="font-medium text-indigo-200 hover:text-indigo-300">
+          Register Now
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+```
+
+`register.html`
+```
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Register</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center w-screen py-12 px-4 sm:px-6 lg:px-8"
+     style="background-image: url('/static/image/flower7.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">  
+  <div class="max-w-md w-full space-y-8 form-style">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-black">
+        Create your account
+      </h2>
+    </div>
+    <form class="mt-8 space-y-6" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="remember" value="true">
+      <div class="rounded-md shadow-sm -space-y-px">
+        {% for field in form %}
+          <div class="{% if not forloop.first %}mt-4{% endif %}">
+            <label for="{{ field.id_for_label }}" class="mb-2 font-semibold text-black">
+              {{ field.label }}
+            </label>
+            <div class="relative">
+              {{ field }}
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                {% if field.errors %}
+                  <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                {% endif %}
+              </div>
+            </div>
+            {% if field.errors %}
+              {% for error in field.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+              {% endfor %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div>
+        <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#800000] hover:bg-[#750000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Register
+        </button>
+      </div>
+    </form>
+
+    {% if messages %}
+    <div class="mt-4">
+      {% for message in messages %}
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <span class="block sm:inline">{{ message }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+      <p class="text-sm text-black">
+        Already have an account?
+        <a href="{% url 'main:login' %}" class="font-medium text-indigo-200 hover:text-indigo-300">
+          Login here
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+```
+`card_info.html`
+
+```
+<div class="rounded-xl overflow-hidden border-2" style="background-color: #800000; border-color: #4c0000;">
+  <div class="p-4 animate-shine">
+    <h5 class="text-lg font-semibold text-gray-200">{{ title }}</h5>
+    <p class="text-white">{{ value }}</p>
+  </div>
+</div>
+```
+
+`card_product.html`
+
+```
+<div class="relative break-inside-avoid">
+  <div class="absolute top-2 z-10 left-1/2 -translate-x-1/2 flex items-center -space-x-2">
+    <div class="w-[3rem] h-8 bg-pink-200 rounded-md opacity-80 -rotate-90"></div>
+  </div>
+  <div class="relative top-5 shadow-md rounded-lg mb-6 break-inside-avoid flex flex-col border-2 border-white-300 transform rotate-1 hover:rotate-0 transition-transform duration-300"
+     style="background-image: url('/static/image/flower2.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+    <div class="p-4 rounded-t-lg border-b-2" style="background-color: #923939; border-color: #d2b7b7;">
+      <h3 class="font-bold text-xl mb-2">{{ product_entry.name }}</h3>
+      <p class="text-black-600">{{ product_entry.price }}</p>
+    </div>
+    <div class="p-4">
+      <p class="font-semibold text-black mb-2">Description</p> 
+      <p class="text-gray-700 mb-2">
+        <span class="bg-[linear-gradient(to_bottom,transparent_0%,transparent_calc(100%_-_1px),#CDC1FF_calc(100%_-_1px))] bg-[length:100%_1.5rem] pb-1">{{ product_entry.description }}</span>
+      </p>
+      <p class="font-semibold text-black mb-2">Color</p> 
+      <p class="text-gray-700 mb-2">
+        <span class="bg-[linear-gradient(to_bottom,transparent_0%,transparent_calc(100%_-_1px),#CDC1FF_calc(100%_-_1px))] bg-[length:100%_1.5rem] pb-1">{{ product_entry.color }}</span>
+      </p>
+    </div>
+  </div>
+  <div class="absolute top-0 -right-4 flex space-x-1">
+    <a href="{% url 'main:edit_product' product_entry.pk %}" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition duration-300 shadow-md">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+      </svg>
+    </a>
+    <a href="{% url 'main:delete_product' product_entry.pk %}" class="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition duration-300 shadow-md">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </a>
+  </div>
+</div>
+```
+
+modify `main.html`
+```
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Cherry Store</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="overflow-x-hidden px-4 md:px-8 pb-8 pt-24 min-h-screen" style="background-image: url('/static/image/white-pink-bg.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+  <div class="p-2 mb-6 relative">
+    <div class="relative grid grid-cols-1 z-30 md:grid-cols-3 gap-8">
+      {% include "card_info.html" with title='NPM' value=npm %}
+      {% include "card_info.html" with title='Name' value=name %}
+      {% include "card_info.html" with title='Class' value=class %}
+    </div>
+    <div class="w-full px-6 absolute top-[44px] left-0 z-20 hidden md:flex">
+      <div class="w-full min-h-4 bg-[#800000]">
+      </div>
+    </div>
+    <div class="h-full w-full py-6 absolute top-0 left-0 z-20 md:hidden flex">
+      <div class="h-full min-w-4 bg-[#800000] mx-auto">
+      </div>
+    </div>
+  </div>
+
+  <div class="px-3 mb-4">
+    <div class="flex rounded-md items-center bg-[#800000] py-2 px-4 w-fit">
+      <h1 class="text-white text-center">Last Login: {{ last_login }}</h1>
+    </div>
+  </div>
+
+  <div class="flex justify-end mb-6">
+    <a href="{% url 'main:create_product_entry' %}" class="bg-[#800000] hover:bg-[#660000] text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105">
+      Add New Product Entry
+    </a>
+  </div>
+
+  {% if not product_entries %}
+  <div class="flex flex-col items-center justify-center min-h-[24rem] p-6">
+    <img src="{% static 'image/very-sad.png' %}" alt="Sad face" class="w-32 h-32 mb-4" />
+    <p class="text-center text-gray-600 mt-4">There is no product yet in Cherry Store.</p>
+  </div>
+  {% else %}
+  <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 w-full">
+    {% for product_entry in product_entries %}
+      {% include 'card_product.html' with product_entry=product_entry %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}
+```
+
+styling `create_product_entry.html`
+
+```
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+<title>Add Product</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="flex flex-col min-h-screen " style="background-image: url('/static/image/flower3.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+  <div class="container mx-auto px-4 py-8 mt-16 max-w-xl">
+    <h1 class="text-3xl font-bold text-center mb-8 text-black">Add New Product Entry</h1>
+  
+    <div class="bg-white shadow-md rounded-lg p-6 form-style">
+      <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="flex flex-col">
+            <label for="{{ field.id_for_label }}" class="mb-2 font-semibold text-gray-700">
+              {{ field.label }}
+            </label>
+            <div class="w-full">
+              {{ field }}
+            </div>
+            {% if field.help_text %}
+              <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+              <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <div class="flex justify-center mt-6">
+          <button type="submit" class="bg-[#800000] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#750000] transition duration-300 ease-in-out w-full">
+            Add Product Entry
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+```
+
+styling `edit_product.html`
+
+```
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+<title>Edit Product</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<div class="flex flex-col min-h-screen " style="background-image: url('/static/image/flower3.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+  <div class="container mx-auto px-4 py-8 mt-16 max-w-xl">
+    <h1 class="text-3xl font-bold text-center mb-8 text-black">Edit Product Entry</h1>
+  
+    <div class="bg-white rounded-lg p-6 form-style">
+      <form method="POST" class="space-y-6">
+          {% csrf_token %}
+          {% for field in form %}
+              <div class="flex flex-col">
+                  <label for="{{ field.id_for_label }}" class="mb-2 font-semibold text-gray-700">
+                      {{ field.label }}
+                  </label>
+                  <div class="w-full">
+                      {{ field }}
+                  </div>
+                  {% if field.help_text %}
+                      <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
+                  {% endif %}
+                  {% for error in field.errors %}
+                      <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                  {% endfor %}
+              </div>
+          {% endfor %}
+          <div class="flex justify-center mt-6">
+              <button type="submit" class="bg-[#800000] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#750000] transition duration-300 ease-in-out w-full">
+                  Edit Product
+              </button>
+          </div>
+      </form>
+  </div>
+  </div>
+</div>
+{% endblock %}
+```
 </details>

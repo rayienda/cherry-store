@@ -7,7 +7,7 @@
 {% block content %}
 {% include 'navbar.html' %}
 
-<div class="flex flex-col min-h-screen bg-gray-100">
+<div class="flex flex-col min-h-screen " style="background-image: url('/static/image/flower3.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
   <div class="container mx-auto px-4 py-8 mt-16 max-w-xl">
     <h1 class="text-3xl font-bold text-center mb-8 text-black">Add New Product Entry</h1>
   
@@ -31,7 +31,7 @@
           </div>
         {% endfor %}
         <div class="flex justify-center mt-6">
-          <button type="submit" class="bg-[#800000]-600 text-black font-semibold px-6 py-3 rounded-lg hover:bg-[#800000]-700 transition duration-300 ease-in-out w-full">
+          <button type="submit" class="bg-[#800000] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#750000] transition duration-300 ease-in-out w-full">
             Add Product Entry
           </button>
         </div>
