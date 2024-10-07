@@ -1412,3 +1412,35 @@ styling `edit_product.html`
 {% endblock %}
 ```
 </details>
+
+<details>
+<Summary><b>Assignment 6</b></Summary>
+
+## Assignment 6 - PBD
+
+### Explain the benefits of using JavaScript in developing web applications!
+- Saves time and bandwith: JavaScript will always be executed on the client environment to save lots of bandwith and make the execution process fast
+
+- Cross-browser compatibility: It supports all modern browsers and produce an equivalent result
+
+- Integration with HTML and CSS: Seamlessly integrates with HTML and CSS to create dynamic and visually appealing web pages
+
+- Security: Provides mechanisms to enhance security, such as Content Security Policy (CSP) and HTTPS
+
+- Versatility: It is possible to develop a whole JavaScript app from front to back using only JavaScript 
+
+- Real-Time Communication: Enables real-time communication features like WebSockets for live updates and notifications. Useful for applications like chat apps, live feeds, and collaborative tools
+
+### Explain why we need to use await when we call fetch()! What would happen if we don't use await?
+
+It is used so the function will wait until the fetch is done, it ensures every operation completes before the next one starts. If we don't use await, the code inside the promise will still run, but nothing happen when we call resolve. But if we call reject nothing will handle the rejection, which is bad as it throws an error on most platforms.
+
+### Why do we need to use the csrf_exempt decorator on the view used for AJAX POST?
+
+Because it'll create security issues if we don't use it. Disabling or not using CSRF protection can expose our application to possible CSRF attacks. We use the csrf_exempt decorator on a view handling AJAX POST requests to bypass CSRF (Cross-Site Request Forgery) protection for that specific view. This is necessary when the request doesn't include a valid CSRF token, which is normally required to ensure that the request is from a trusted source. By exempting the view, we allow the request without the CSRF token, though this can reduce security if not handled properly.
+
+### On this week's tutorial, the user input sanitization is done in the back-end as well. Why can't the sanitization be done just in the front-end?
+User input sanitization should not be done only in the front-end because front-end validation can easily be bypassed. Attackers can manipulate requests using tools like browser developer tools or send crafted requests directly to the server, bypassing the front-end entirely. Back-end validation ensures that all incoming data is properly sanitized and secure, regardless of what happens on the client side. This provides a critical layer of security and protects against malicious inputs, such as SQL injection or XSS (Cross-Site Scripting) attacks.
+
+### Explain how you implemented the checklist above step-by-step (not just following the tutorial)!
+</details>
