@@ -1443,4 +1443,212 @@ Because it'll create security issues if we don't use it. Disabling or not using 
 User input sanitization should not be done only in the front-end because front-end validation can easily be bypassed. Attackers can manipulate requests using tools like browser developer tools or send crafted requests directly to the server, bypassing the front-end entirely. Back-end validation ensures that all incoming data is properly sanitized and secure, regardless of what happens on the client side. This provides a critical layer of security and protects against malicious inputs, such as SQL injection or XSS (Cross-Site Scripting) attacks.
 
 ### Explain how you implemented the checklist above step-by-step (not just following the tutorial)!
+
+##### Adding error message to login
+```
+#views.py
+def login_user(request):
+   if request.method == 'POST':
+      form = AuthenticationForm(data=request.POST)
+
+      if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            response = HttpResponseRedirect(reverse("main:show_main"))
+            response.set_cookie('last_login', str(datetime.datetime.now()))
+            return response
+      else:
+          messages.error(request, "Invalid username or password. Please try again.") # will render this message to the request that sends the login request
+
+   else:
+      form = AuthenticationForm(request)
+   context = {'form': form}
+   return render(request, 'login.html', context)
+```
+
+##### Create AJAX POST and its Modal
+add button access the modal in `main.html`
+```
+<div class="flex justify-end mb-6">
+      <a href="{% url 'main:create_product_entry' %}" class="bg-[#800000] hover:bg-[#750000] text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 mx-4 ">
+          Add New Product Entry
+      </a>
+      <button data-modal-target="crudModal" data-modal-toggle="crudModal" class="bg-[#B94C4C] hover:bg-[#8E2727] text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105" onclick="showModal();">
+        Add New Product Entry by AJAX
+      </button>
+    </div> 
+```
+
+link to the product entry modal (`main.html`):
+```
+<!-- Modal body -->
+      <div class="px-6 py-4 space-y-6 form-style">
+        <form id="productEntryForm">
+          <div class="mb-4">
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-white" placeholder="Name" required>
+          </div>
+          <div class="mb-4">
+            <label for="Price" class="block text-sm font-medium text-gray-700">Price</label>
+            <input type="integer" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-grey-700" placeholder="Price" required>
+          </div>
+          <div class="mb-4">
+            <label for="Description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea id="description" name="description" rows="3" class="mt-1 block w-full h-52 resize-none border border-gray-300 rounded-md p-2 hover:border-grey-700" placeholder="Description" required></textarea>
+          </div>
+          <div class="mb-4">
+            <label for="Color" class="block text-sm font-medium text-gray-700">Color</label>
+            <input type="text" id="color" name="color" class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-grey-700" placeholder="Color" required>
+          </div>
+```
+
+##### Make a new function to create product using AJAX:
+```
+# views.py
+@csrf_exempt
+@require_POST
+def add_product_ajax(request):
+    name = strip_tags(request.POST.get("name"))
+    price = request.POST.get("price")
+    description = strip_tags(request.POST.get("description"))
+    color = strip_tags(request.POST.get("color"))
+    user = request.user
+
+    new_product = Product(
+        name=name, price=price,
+        description=description, color=color,
+        user=user
+    )
+    new_product.save()
+
+    return HttpResponse(b"CREATED", status=201)
+```
+
+route `urls.py`:
+
+```
+from django.urls import path
+from main.views import create_product_ajax,
+
+app_name = 'main'
+urlpatterns = [
+    path('', show_main, name = 'show_main'),
+...
+        path('create-product-ajax', create_product_ajax, name='create_product_ajax'),
+]
+
+```
+
+##### Create modal as a form to add product
+`main.html`
+```
+<div id="crudModal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-gray-800 bg-opacity-50 overflow-x-hidden overflow-y-auto transition-opacity duration-300 ease-out">
+    <div id="crudModalContent" class="relative bg-white rounded-lg shadow-lg w-5/6 sm:w-3/4 md:w-1/2 lg:w-1/3 mx-4 sm:mx-0 transform scale-95 opacity-0 transition-transform transition-opacity duration-300 ease-out">
+      <!-- Modal header -->
+      <div class="flex items-center justify-between p-4 border-b rounded-t">
+        <h3 class="text-xl font-semibold text-gray-900">
+          Add New Product Entry
+        </h3>
+        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" id="closeModalBtn">
+          <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+          </svg>
+          <span class="sr-only">Close modal</span>
+        </button>
+      </div>
+      <!-- Modal body -->
+      <div class="px-6 py-4 space-y-6 form-style">
+        <form id="productEntryForm">
+          <div class="mb-4">
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-white" placeholder="Name" required>
+          </div>
+          <div class="mb-4">
+            <label for="Price" class="block text-sm font-medium text-gray-700">Price</label>
+            <input type="integer" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-grey-700" placeholder="Price" required>
+          </div>
+          <div class="mb-4">
+            <label for="Description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea id="description" name="description" rows="3" class="mt-1 block w-full h-52 resize-none border border-gray-300 rounded-md p-2 hover:border-grey-700" placeholder="Description" required></textarea>
+          </div>
+          <div class="mb-4">
+            <label for="Color" class="block text-sm font-medium text-gray-700">Color</label>
+            <input type="text" id="color" name="color" class="mt-1 block w-full border border-gray-300 rounded-md p-2 hover:border-grey-700" placeholder="Color" required>
+          </div>
+          
+        </form>
+      </div>
+      <!-- Modal footer -->
+      <div class="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2 p-6 border-t border-gray-200 rounded-b justify-center md:justify-end">
+        <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg" id="cancelButton">Cancel</button>
+        <button type="submit" id="submitProductEntry" form="productEntryForm" class="bg-pink-700 hover:bg-pink-800 text-white font-bold py-2 px-4 rounded-lg">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+```
+<script>
+const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+
+  function showModal() {
+      const modal = document.getElementById('crudModal');
+      const modalContent = document.getElementById('crudModalContent');
+
+      modal.classList.remove('hidden'); 
+      setTimeout(() => {
+        modalContent.classList.remove('opacity-0', 'scale-95');
+        modalContent.classList.add('opacity-100', 'scale-100');
+      }, 50); 
+  }
+
+  function hideModal() {
+      const modal = document.getElementById('crudModal');
+      const modalContent = document.getElementById('crudModalContent');
+
+      modalContent.classList.remove('opacity-100', 'scale-100');
+      modalContent.classList.add('opacity-0', 'scale-95');
+
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 150); 
+  }
+
+  document.getElementById("cancelButton").addEventListener("click", hideModal);
+  document.getElementById("closeModalBtn").addEventListener("click", hideModal);
+</script>
+```
+
+##### Adding data product with AJAX
+```
+<script>
+  function addProductEntry() {
+    fetch("{% url 'main:add_product_ajax' %}", {
+      method: "POST",
+      body: new FormData(document.querySelector('#productEntryForm')),
+    })
+    .then(response => refreshProductEntries())
+
+    document.getElementById("productEntryForm").reset(); 
+    document.querySelector("[data-modal-toggle='crudModal']").click();
+
+    return false;
+  }
+</script>
+```
+
+##### Sanitize data with DOMPurify
+`main.html`
+```
+  async function refreshProductEntries() {
+    document.getElementById("product_entry_cards").innerHTML = "";
+    document.getElementById("product_entry_cards").className = "";
+    const productEntries = await getProductEntries();
+    let htmlString = "";
+    let classNameString = "";
+    ...
+  }
+```
 </details>
